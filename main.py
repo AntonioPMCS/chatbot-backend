@@ -17,7 +17,7 @@ class ChatRequest(BaseModel):
 async def chat(request: ChatRequest):
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o-mini",
             messages=[{"role": "system", "content": "You are a helpful AI assistant."},
                       {"role": "user", "content": request.message}]
         )
