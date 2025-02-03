@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "chatbot-backend"
+version = "0.1.0"
+description = "A chatbot backend using FastAPI and Hugging Face models"
+authors = ["Your Name"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.100.0"
+uvicorn = "^0.23.0"
+transformers = "^4.36.0"
+torch = "^2.0.0"
