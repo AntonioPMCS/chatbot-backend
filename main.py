@@ -1,14 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-import openai
-import os
+from transformers import pipeline
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# Set your OpenAI API key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = openai.Client(api_key=OPENAI_API_KEY)
+# Load Hugging Face model for text generation
+generator = pipeline("text-generation", model="mistralai/Mistral-7B-Instruct")
 
 class ChatRequest(BaseModel):
     message: str
@@ -16,12 +14,8 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat(request: ChatRequest):
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "system", "content": "You are a helpful AI assistant."},
-                      {"role": "user", "content": request.message}]
-        )
-        return JSONResponse(content={"response": response.choices[0].message.content})
+        response = generator(request.message, max_length=200, do_sample=True)
+        return JSONResponse(content={"response": response[0]["generated_text"]})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
