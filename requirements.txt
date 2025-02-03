@@ -1,3 +1,4 @@
-uvicorn
-transformers
 torch
+transformers
+fastapi
+uvicorn
