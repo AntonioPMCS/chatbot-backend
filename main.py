@@ -1,12 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from transformers import pipeline
+import requests
+import os
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# Load Hugging Face model for text generation
-generator = pipeline("text-generation", model="mistralai/Mistral-7B-Instruct")
+# Set Hugging Face API details
+HF_API_KEY = os.getenv("HF_API_KEY")  # Set this in Railway's environment variables
+HF_MODEL = "mistralai/Mistral-7B-Instruct"
+HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 class ChatRequest(BaseModel):
     message: str
@@ -14,8 +18,14 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat(request: ChatRequest):
     try:
-        response = generator(request.message, max_length=200, do_sample=True)
-        return JSONResponse(content={"response": response[0]["generated_text"]})
+        payload = {"inputs": request.message, "parameters": {"max_length": 200, "do_sample": True}}
+        response = requests.post(HF_API_URL, headers=HEADERS, json=payload)
+        response_json = response.json()
+        
+        if "error" in response_json:
+            return JSONResponse(content={"error": response_json["error"]}, status_code=500)
+        
+        return JSONResponse(content={"response": response_json[0]["generated_text"]})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
